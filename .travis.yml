@@ -1,0 +1,23 @@
+language: go
+go:
+  - 1.5.3
+
+sudo: required
+dist: trusty
+
+before_install:
+  - sudo apt-get -y install pkg-config libseccomp-dev git
+
+install: true
+
+script:
+  # Ugly solution to build runc in my own repo
+  - mkdir Godeps/_workspace/src/github.com/liangchenye -p 
+  - sed -i "s/github.com\/opencontainers\/runc/github.com\/liangchenye\/runc/g" `find . -type f`
+  - make
+  - sudo make install
+  - git clone https://github.com/liangchenye/ocitools.git
+  - cd ocitools
+  - git checkout initruntimetestCmd
+  - make
+  - sudo ./ocitools runtimetest -r runc
